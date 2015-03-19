@@ -26,3 +26,4 @@ for(C in classes){
   summary(g)
   pred <- cbind(pred,C=predict(g,test,type="response"))
 }
+write.csv(pred, file= "firstsub.csv",row.names=F)
