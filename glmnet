@@ -1,0 +1,19 @@
+test <- read.csv("test.csv", header=T)
+train <- read.csv("train.csv", header=T)
+options(scipen=10)
+library(glmnet)
+p<- as.integer(test[,1])
+classes<- c("Class_1","Class_2", "Class_3", "Class_4" , "Class_5" ,"Class_6","Class_7","Class_8","Class_9")
+#classes <-c("Class_1")
+
+for(C in classes){
+  
+  tempdata <- data.frame(train[,-95] , class=ifelse(train$target==C,1,0))
+  g<-cv.glmnet(as.matrix(tempdata[,2:94]), as.matrix(tempdata[,95]), family = "binomial",alpha=0)
+  p <- cbind(p,"C"=as.numeric(predict(g, newx = as.matrix(test[,2:94]),type="response")))
+}
+pred<-data.frame(p)
+pred1<- pred[,2:10]/(rowSums(pred[,2:10]))
+sub<-cbind(pred[,1],pred1)
+names(sub)<- c("id","Class_1","Class_2", "Class_3", "Class_4" , "Class_5" ,"Class_6","Class_7","Class_8","Class_9")
+write.csv(sub, file= "ridgesub.csv",row.names=F)
