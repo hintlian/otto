@@ -1,6 +1,8 @@
 test <- read.csv("test.csv", header=T)
 train <- read.csv("train.csv", header=T)
+ 
 library(reshape)
+options(scipen=10)
 classes<- c("Class_1","Class_2", "Class_3", "Class_4" , "Class_5" ,"Class_6","Class_7","Class_8","Class_9")
 split <- sort_df(data.frame(train, randnum = runif(nrow(train))),vars=96)
 
@@ -34,7 +36,7 @@ for(clust in clusters){
   for(i in 1:nrow(validation)){
     for(j in 2:10){
       
-      if( cv[i,j]<10^-15){ 
+      if(cv[i,j]<10^-15){ 
         cv[i,j]<-10^-15 
       } else if(cv[i,j]>(1-10^-15)){
         cv[i,j]<- 1-10^-15
@@ -50,3 +52,21 @@ for(clust in clusters){
     best[2]<-logloss
   }
 }
+
+clust<-best[1]
+fit<-kmeans(sall,clust, iter.max=1000)
+compare<-data.frame(cbind(fit$cluster[train[,1]],train[,95]))
+
+m <- matrix(0, ncol = 9, nrow = clust)
+
+for(i in 1:9){
+  for (j in 1:clust){
+    m[j,i] <-length(which(compare[,1]==j & compare[,2]==i ))
+  }
+}
+
+m<-m[,1:9]/rowSums(m[,1:9])
+
+sub<- data.frame(test[,1], m[fit$cluster[test[,1]+nrow(train)],])
+names(sub)<- c("id","Class_1","Class_2", "Class_3", "Class_4" , "Class_5" ,"Class_6","Class_7","Class_8","Class_9")
+write.csv(sub, file= "clustermix.csv",row.names=F)
